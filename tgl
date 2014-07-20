@@ -1,0 +1,79 @@
+#!/usr/bin/env node
+
+var TogglClient = require('toggl-api'), 
+    toggl = new TogglClient({apiToken: process.env.TOGGL_API_TOKEN}),
+    program = require('commander'),
+    fs = require('fs')
+
+function _notify(what){
+  exec('echo "'+ what + '" | dzen2 -w 1600 -h 30  -p 2 -bg white ')
+}
+
+function _start(what){
+  toggl.startTimeEntry({
+    description: what,
+  }, function(err){
+    if(err)
+      return console.error(err)
+    fs.appendFile('/home/bubujka/.db/wiki/toggl', what+"\n", function (err) { });
+    fs.openSync('/home/bubujka/.pid/tgl.pid', 'w')
+    _notify('Новая задача в toggl поставлена')
+  })
+}
+
+function _stop(){
+  toggl.getCurrentTimeEntry(function(err, entry){
+    if(err)
+      return console.error(err)
+    toggl.stopTimeEntry(entry.id, function(err){
+      if(err)
+        return console.error(err)
+      fs.unlinkSync('/home/bubujka/.pid/tgl.pid')
+      _notify('Остановили toggl')
+    })
+  })
+}
+
+function _check(){
+  toggl.getCurrentTimeEntry(function(err, entry){
+    if(err)
+      return
+    if(entry)
+      fs.openSync('/home/bubujka/.pid/tgl.pid', 'w')
+    else
+      if(fs.existsSync('/home/bubujka/.pid/tgl.pid'))
+        fs.unlinkSync('/home/bubujka/.pid/tgl.pid')
+  })
+}
+
+program.version('0.0.1')
+program
+  .command('start <what>')
+  .description('start new time entry with <what> description')
+  .action(_start);
+
+program
+  .command('stop')
+  .description('stop latest time entry')
+  .action(_stop);
+
+program
+  .command('check')
+  .description('Check toggl status, adjust pid file')
+  .action(_check);
+
+program.parse(process.argv)
+
+var exec = require('child_process').exec,
+    child
+
+if (!program.args.length){
+  child = exec('tac ~/.db/wiki/toggl | dmenu-wrapper Toggl 10', function(err, stdout, stderr){
+    if(err)
+      return console.error(err)
+    if(stdout == '')
+      _stop()
+    else
+      _start(stdout)
+  })
+}
