@@ -5,8 +5,10 @@ var TogglClient = require('toggl-api'),
     program = require('commander'),
     fs = require('fs')
 
-function _notify(what){
-  exec('echo "'+ what + '" | dzen2 -w 1600 -h 30  -p 2 -bg white ')
+function _notify(what, color){
+  if(!color)
+    color = 'white'
+  exec('echo "'+ what + '" | dzen2-wrapper '+ color)
 }
 
 function _start(what){
@@ -17,7 +19,7 @@ function _start(what){
       return console.error(err)
     fs.appendFile('/home/bubujka/.db/wiki/toggl', what+"\n", function (err) { });
     fs.openSync('/home/bubujka/.pid/tgl.pid', 'w')
-    _notify('Новая задача в toggl поставлена')
+    _notify('Новая задача в toggl поставлена', 'green')
   })
 }
 
@@ -29,7 +31,7 @@ function _stop(){
       if(err)
         return console.error(err)
       fs.unlinkSync('/home/bubujka/.pid/tgl.pid')
-      _notify('Остановили toggl')
+      _notify('Остановили toggl', 'red')
     })
   })
 }
