@@ -17,7 +17,6 @@ function _start(what){
   }, function(err){
     if(err)
       return console.error(err)
-    fs.appendFile('/home/bubujka/.db/wiki/toggl', what+"\n", function (err) { });
     fs.openSync('/home/bubujka/.pid/tgl.pid', 'w')
     _notify('Новая задача в toggl поставлена', 'green')
   })
