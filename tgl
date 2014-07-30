@@ -69,7 +69,7 @@ var exec = require('child_process').exec,
     child
 
 if (!program.args.length){
-  child = exec('tac ~/.puffy-my | dmenu-wrapper Toggl 40', function(err, stdout, stderr){
+  child = exec('cat ~/.puffy-my | dmenu-wrapper Toggl 40', function(err, stdout, stderr){
     if(err)
       return console.error(err)
     if(stdout == '')
