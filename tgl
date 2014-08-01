@@ -4,6 +4,8 @@ var TogglClient = require('toggl-api'),
     toggl = new TogglClient({apiToken: process.env.TOGGL_API_TOKEN}),
     program = require('commander'),
     fs = require('fs')
+var exec = require('child_process').exec,
+    child
 
 function _notify(what, color){
   if(!color)
@@ -63,13 +65,30 @@ program
   .description('Check toggl status, adjust pid file')
   .action(_check);
 
+
+program
+  .command('puffy')
+  .option('-a, --accounts [items]', 'Show selection from accounts')
+  .description('start new time entry with <what> description')
+  .action(function(program){
+    var accounts = program.accounts.split(',').join(' ')
+    child = exec('puffy my '+accounts+' | dmenu-wrapper "Toggl ('+accounts+')" 40', function(err, stdout, stderr){
+      if(err)
+        return console.error(err)
+      if(stdout == '')
+        _stop()
+      else
+        _start(stdout)
+    })
+  })
+
+
+
 program.parse(process.argv)
 
-var exec = require('child_process').exec,
-    child
 
 if (!program.args.length){
-  child = exec('cat ~/.puffy-my | dmenu-wrapper Toggl 40', function(err, stdout, stderr){
+  child = exec('puffy my | dmenu-wrapper Toggl 40', function(err, stdout, stderr){
     if(err)
       return console.error(err)
     if(stdout == '')
