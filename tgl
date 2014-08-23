@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 
-var TogglClient = require('toggl-api'), 
+var TogglClient = require('toggl-api'),
     toggl = new TogglClient({apiToken: process.env.TOGGL_API_TOKEN}),
     program = require('commander'),
     fs = require('fs')
@@ -73,11 +73,7 @@ program
   .action(function(program){
     var accounts = program.accounts.split(',').join(' ')
     child = exec('puffy my '+accounts+' | dmenu-wrapper "Toggl ('+accounts+')" 40', function(err, stdout, stderr){
-      if(err)
-        _stop()
-      if(stdout == '')
-        _stop()
-      else
+      if(stdout != '')
         _start(stdout)
     })
   })
