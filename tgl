@@ -72,7 +72,7 @@ program
   .description('start new time entry with <what> description')
   .action(function(program){
     var accounts = program.accounts.split(',').join(' ')
-    child = exec('puffy my '+accounts+' | dmenu-wrapper "Toggl ('+accounts+')" 40', function(err, stdout, stderr){
+    child = exec('puffy my '+accounts+' | awk \'{print tolower($0)}\' | dmenu-wrapper "Toggl ('+accounts+')" 40', function(err, stdout, stderr){
       if(stdout != '')
         _start(stdout)
     })
