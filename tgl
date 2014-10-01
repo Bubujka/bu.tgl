@@ -15,6 +15,7 @@ function _notify(what, color){
 
 function _start(what){
   toggl.startTimeEntry({
+    wid: process.env.TOGGL_DEFAULT_WID,
     description: what,
   }, function(err){
     if(err)
