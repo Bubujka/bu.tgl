@@ -29,12 +29,17 @@ function _stop(){
   toggl.getCurrentTimeEntry(function(err, entry){
     if(err)
       return console.error(err)
-    toggl.stopTimeEntry(entry.id, function(err){
-      if(err)
-        return console.error(err)
+    if(entry){
+      toggl.stopTimeEntry(entry.id, function(err){
+        if(err)
+          return console.error(err)
+        fs.unlinkSync('/home/bubujka/.pid/tgl.pid')
+        _notify('Остановили toggl', 'red')
+      })
+    }else{
       fs.unlinkSync('/home/bubujka/.pid/tgl.pid')
       _notify('Остановили toggl', 'red')
-    })
+    }
   })
 }
 
