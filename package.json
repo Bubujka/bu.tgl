@@ -3,6 +3,9 @@
   "version": "0.0.0",
   "description": "",
   "main": "index.js",
+  "bin": {
+    "tgl": "./tgl"
+  },
   "dependencies": {
     "commander": "^2.2.0",
     "toggl-api": "^0.0.1"

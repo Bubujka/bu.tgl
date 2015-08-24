@@ -13,9 +13,9 @@ function _notify(what, color){
   exec('echo "'+ what + '" | dzen2-wrapper '+ color)
 }
 
-function _start(what){
+function _start(what, program){
   toggl.startTimeEntry({
-    wid: process.env.TOGGL_DEFAULT_WID,
+    wid: program.wid,
     description: what,
   }, function(err){
     if(err)
@@ -58,6 +58,7 @@ function _check(){
 program.version('0.0.1')
 program
   .command('start <what>')
+  .option('-w, --wid [wid]', 'Workspace [wid]', process.env.TOGGL_DEFAULT_WID)
   .description('start new time entry with <what> description')
   .action(_start);
 
