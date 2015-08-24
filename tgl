@@ -3,14 +3,14 @@
 var TogglClient = require('toggl-api'),
     toggl = new TogglClient({apiToken: process.env.TOGGL_API_TOKEN}),
     program = require('commander'),
-    fs = require('fs')
-var exec = require('child_process').exec,
-    child
+    exec = require('child_process').exec,
+    child;
 
 function _notify(what, color){
-  if(!color)
-    color = 'white'
-  exec('echo "'+ what + '" | dzen2-wrapper '+ color)
+  if(!color){
+    color = 'white';
+  }
+  exec('echo "'+ what + '" | dzen2-wrapper '+ color);
 }
 
 function _start(what, program){
@@ -18,44 +18,33 @@ function _start(what, program){
     wid: program.wid,
     description: what,
   }, function(err){
-    if(err)
-      return console.error(err)
-    fs.openSync('/home/bubujka/.pid/tgl.pid', 'w')
-    _notify('Новая задача в toggl поставлена', 'green')
-  })
+    if(err){
+      return console.error(err);
+    }
+    _notify('Новая задача в toggl поставлена', 'green');
+  });
 }
 
 function _stop(){
   toggl.getCurrentTimeEntry(function(err, entry){
-    if(err)
-      return console.error(err)
+    if(err){
+      return console.error(err);
+    }
     if(entry){
       toggl.stopTimeEntry(entry.id, function(err){
-        if(err)
-          return console.error(err)
-        fs.unlinkSync('/home/bubujka/.pid/tgl.pid')
-        _notify('Остановили toggl', 'red')
-      })
+        if(err){
+          return console.error(err);
+        }
+        _notify('Остановили toggl', 'red');
+      });
     }else{
-      fs.unlinkSync('/home/bubujka/.pid/tgl.pid')
-      _notify('Остановили toggl', 'red')
+      _notify('Остановили toggl', 'red');
     }
-  })
+  });
 }
 
-function _check(){
-  toggl.getCurrentTimeEntry(function(err, entry){
-    if(err)
-      return
-    if(entry)
-      fs.openSync('/home/bubujka/.pid/tgl.pid', 'w')
-    else
-      if(fs.existsSync('/home/bubujka/.pid/tgl.pid'))
-        fs.unlinkSync('/home/bubujka/.pid/tgl.pid')
-  })
-}
+program.version('0.0.1');
 
-program.version('0.0.1')
 program
   .command('start <what>')
   .option('-w, --wid [wid]', 'Workspace [wid]', process.env.TOGGL_DEFAULT_WID)
@@ -68,35 +57,33 @@ program
   .action(_stop);
 
 program
-  .command('check')
-  .description('Check toggl status, adjust pid file')
-  .action(_check);
-
-
-program
   .command('puffy')
   .option('-a, --accounts [items]', 'Show selection from accounts')
   .description('start new time entry with <what> description')
   .action(function(program){
-    var accounts = program.accounts.split(',').join(' ')
-    child = exec('puffy my '+accounts+' | awk \'{print tolower($0)}\' | dmenu-wrapper "Toggl ('+accounts+')" 40', function(err, stdout, stderr){
-      if(stdout != '')
-        _start(stdout)
-    })
-  })
+    var accounts = program.accounts.split(',').join(' ');
+    var cmd = 
+      'puffy my '+accounts+' |'+
+      ' awk \'{print tolower($0)}\' |'+
+      ' dmenu-wrapper "Toggl ('+accounts+')" 40';
+    child = exec(cmd, function(err, stdout){
+      if(stdout !== ''){
+        _start(stdout);
+      }
+    });
+  });
 
-
-
-program.parse(process.argv)
-
+program.parse(process.argv);
 
 if (!program.args.length){
-  child = exec('puffy my | dmenu-wrapper Toggl 40', function(err, stdout, stderr){
-    if(err)
-      _stop()
-    if(stdout == '')
-      _stop()
-    else
-      _start(stdout)
-  })
+  child = exec('puffy my | dmenu-wrapper Toggl 40', function(err, stdout){
+    if(err){
+      _stop();
+    }
+    if(stdout === ''){
+      _stop();
+    }else{
+      _start(stdout);
+    }
+  });
 }
