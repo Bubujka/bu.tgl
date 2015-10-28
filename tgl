@@ -62,7 +62,12 @@ program
   .option('-w, --wid [wid]', 'Workspace [wid]', process.env.TOGGL_DEFAULT_WID)
   .description('start new time entry with <what> description')
   .action(function(program){
-    var accounts = program.accounts.split(',').join(' ');
+    var accounts;
+    if(program.accounts){
+      accounts = program.accounts.split(',').join(' ');
+    }else{
+      accounts = '';
+    }
     var cmd = 
       'puffy my '+accounts+' |'+
       ' awk \'{print tolower($0)}\' |'+
