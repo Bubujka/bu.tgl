@@ -6,11 +6,16 @@ var TogglClient = require('toggl-api'),
     exec = require('child_process').exec,
     child;
 
+var nn = require('node-notifier');
+
 function _notify(what, color){
   if(!color){
     color = 'white';
   }
-  exec('echo "'+ what + '" | dzen2-wrapper '+ color);
+  nn.notify({
+    title: 'Toggl client',
+    message: what
+  });
 }
 
 function _start(what, program){
@@ -68,7 +73,7 @@ program
     }else{
       accounts = '';
     }
-    var cmd = 
+    var cmd =
       'puffy my '+accounts+' |'+
       ' awk \'{print tolower($0)}\' |'+
       ' dmenu-wrapper "Toggl ('+accounts+')" 40';

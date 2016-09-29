@@ -8,6 +8,7 @@
   },
   "dependencies": {
     "commander": "^2.2.0",
+    "node-notifier": "4.6.1",
     "toggl-api": "^0.0.1"
   },
   "devDependencies": {},
