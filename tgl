@@ -1,49 +1,51 @@
 #!/usr/bin/env node
 
-var TogglClient = require('toggl-api'),
-    toggl = new TogglClient({apiToken: process.env.TOGGL_API_TOKEN}),
-    program = require('commander'),
-    exec = require('child_process').exec,
-    child;
+'use strict';
 
-var nn = require('node-notifier');
+const TogglClient = require('toggl-api');
+const program = require('commander');
+const exec = require('child_process').exec;
+const nn = require('node-notifier');
 
-function _notify(what, color){
-  if(!color){
+const toggl = new TogglClient({ apiToken: process.env.TOGGL_API_TOKEN });
+
+function notify(what, color) {
+  if (!color) {
     color = 'white';
   }
   nn.notify({
     title: 'Toggl client',
-    message: what
+    message: what,
   });
 }
 
-function _start(what, program){
+function start(what, prg) {
   toggl.startTimeEntry({
-    wid: program.wid,
+    wid: prg.wid,
     description: what,
-  }, function(err){
-    if(err){
-      return console.error(err);
+  }, (err) => {
+    if (err) {
+      console.error(err); // eslint-disable-line
+    } else {
+      notify('Новая задача в toggl поставлена', 'green');
     }
-    _notify('Новая задача в toggl поставлена', 'green');
   });
 }
 
-function _stop(){
-  toggl.getCurrentTimeEntry(function(err, entry){
-    if(err){
-      return console.error(err);
-    }
-    if(entry){
-      toggl.stopTimeEntry(entry.id, function(err){
-        if(err){
-          return console.error(err);
+function stop() {
+  toggl.getCurrentTimeEntry((err, entry) => {
+    if (err) {
+      console.error(err); // eslint-disable-line
+    } else if (entry) {
+      toggl.stopTimeEntry(entry.id, (err) => {
+        if (err) {
+          console.error(err); // eslint-disable-line
+        } else {
+          notify('Остановили toggl', 'red');
         }
-        _notify('Остановили toggl', 'red');
       });
-    }else{
-      _notify('Остановили toggl', 'red');
+    } else {
+      notify('Остановили toggl', 'red');
     }
   });
 }
@@ -54,47 +56,47 @@ program
   .command('start <what>')
   .option('-w, --wid [wid]', 'Workspace [wid]', process.env.TOGGL_DEFAULT_WID)
   .description('start new time entry with <what> description')
-  .action(_start);
+  .action(start);
 
 program
   .command('stop')
   .description('stop latest time entry')
-  .action(_stop);
+  .action(stop);
 
 program
   .command('puffy')
   .option('-a, --accounts [items]', 'Show selection from accounts')
   .option('-w, --wid [wid]', 'Workspace [wid]', process.env.TOGGL_DEFAULT_WID)
   .description('start new time entry with <what> description')
-  .action(function(program){
-    var accounts;
-    if(program.accounts){
-      accounts = program.accounts.split(',').join(' ');
-    }else{
+  .action((prg) => {
+    let accounts;
+    if (prg.accounts) {
+      accounts = prg.accounts.split(',').join(' ');
+    } else {
       accounts = '';
     }
-    var cmd =
-      'puffy my '+accounts+' |'+
-      ' awk \'{print tolower($0)}\' |'+
-      ' dmenu-wrapper "Toggl ('+accounts+')" 40';
-    child = exec(cmd, function(err, stdout){
-      if(stdout !== ''){
-        _start(stdout, program);
+    const cmd =
+      `puffy my ${accounts} |` +
+      ' awk \'{print tolower($0)}\' |' +
+      ` dmenu-wrapper "Toggl (${accounts})" 40`;
+    exec(cmd, (err, stdout) => {
+      if (stdout !== '') {
+        start(stdout, prg);
       }
     });
   });
 
 program.parse(process.argv);
 
-if (!program.args.length){
-  child = exec('puffy my | dmenu-wrapper Toggl 40', function(err, stdout){
-    if(err){
-      _stop();
+if (!program.args.length) {
+  exec('puffy my | dmenu-wrapper Toggl 40', (err, stdout) => {
+    if (err) {
+      stop();
     }
-    if(stdout === ''){
-      _stop();
-    }else{
-      _start(stdout);
+    if (stdout === '') {
+      stop();
+    } else {
+      start(stdout);
     }
   });
 }
