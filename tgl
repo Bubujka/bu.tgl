@@ -19,18 +19,34 @@ function notify(what, color) {
   });
 }
 
+function add(duration, description, prg) {
+  toggl.createTimeEntry({
+    wid: prg.wid,
+    start: new Date,
+    description: description.join(' '),
+    duration,
+  }, (err) => {
+    if (err) {
+      throw err;
+    } else {
+      notify('Запись в тоггл добавлена', 'green');
+    }
+  });
+}
+
 function start(what, prg) {
   toggl.startTimeEntry({
     wid: prg.wid,
     description: what,
   }, (err) => {
     if (err) {
-      console.error(err); // eslint-disable-line
+      throw err;
     } else {
       notify('Новая задача в toggl поставлена', 'green');
     }
   });
 }
+
 
 function stop() {
   toggl.getCurrentTimeEntry((err, entry) => {
@@ -57,6 +73,12 @@ program
   .option('-w, --wid [wid]', 'Workspace [wid]', process.env.TOGGL_DEFAULT_WID)
   .description('start new time entry with <what> description')
   .action(start);
+
+program
+  .command('add <seconds> <what...>')
+  .option('-w, --wid [wid]', 'Workspace [wid]', process.env.TOGGL_DEFAULT_WID)
+  .description('add new time entry with <what> description')
+  .action(add);
 
 program
   .command('stop')
