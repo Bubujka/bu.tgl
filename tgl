@@ -23,6 +23,7 @@ function add(duration, description, prg) {
   toggl.createTimeEntry({
     wid: prg.wid,
     start: new Date,
+    billable: true,
     description: description.join(' '),
     duration,
   }, (err) => {
@@ -37,6 +38,7 @@ function add(duration, description, prg) {
 function start(what, prg) {
   toggl.startTimeEntry({
     wid: prg.wid,
+    billable: true,
     description: what,
   }, (err) => {
     if (err) {
@@ -82,8 +84,7 @@ program
 
 program
   .command('stop')
-  .description('stop latest time entry')
-  .action(stop);
+  .description('stop latest time entry') .action(stop);
 
 program
   .command('puffy')
