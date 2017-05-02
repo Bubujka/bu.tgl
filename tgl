@@ -22,7 +22,7 @@ function notify(what, color) {
 function add(duration, description, prg) {
   toggl.createTimeEntry({
     wid: prg.wid,
-    start: new Date,
+    start: new Date(),
     billable: true,
     description: description.join(' '),
     duration,
